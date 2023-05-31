@@ -81,15 +81,21 @@
                 $task = $row['Todo_name'];
                 $taskid = $row['id'];
                 $uniq_id = $row['user_ID'];
+                $date_added = $row['date_added'];
                 $todo_status = $row['Todo_status'];
                 ?>
                 <div id = "main-todo"  class = "main-todo">
                     <?php if($totaltask > 0){?>
-                        <div class = "left" <?php if($todo_status == "FINISHED"){echo 'style=color:black;text-decoration:line-through;';}?>>
-                            <span class = "outer">
-                                <span class = "inner" <?php if($todo_status == "FINISHED"){echo 'style=color:red;';}?>><?php echo $task ?></span>
+                        <div class = "left" style = "line-height:15px;">
+                            <div>
+                            <span class = "outer"  <?php if($todo_status == "FINISHED"){echo 'style=color:black;text-decoration:line-through;';}?>>
+                                <span class = "inner" <?php if($todo_status == "FINISHED"){echo 'style=color:red;';}?> title = "<?php echo $date_added ?>"><?php echo $task ?></span>
                             </span>
+                            
+                            </div>
+                        <span><?php echo $date_added ?></span>
                         </div>
+                       
                         <div class = "right">
                             <button id = "buttons" type = "button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#undoneTask<?php echo $taskid ?>"><i class ="fa-solid fa-xmark" title = "Undone"></i></button>
                             <button id = "buttons" type = "button" <?php if($todo_status == "FINISHED"){echo 'disabled';}?>  class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removedTask<?php echo $taskid ?>"><i class ="fa-solid fa-trash" title = "Delete"></i></button>

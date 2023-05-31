@@ -109,15 +109,21 @@
                 $task = $row['Todo_name'];
                 $taskid = $row['id'];
                 $uniq_id = $row['user_ID'];
+                $date_added = $row['date_added'];
                 $todo_status = $row['Todo_status'];
                 ?>
                 <div id = "main-todo"  class = "main-todo">
                     <?php if($totaltask > 0){?>
-                        <div class = "left" <?php if($todo_status == "FINISHED"){echo 'style=color:black;text-decoration:line-through;';}?>>
-                            <span class = "outer">
-                                <span class = "inner" <?php if($todo_status == "FINISHED"){echo 'style=color:red;';}?>><?php echo $task ?></span>
+                        <div class = "left" style = "line-height:15px;">
+                            <div>
+                            <span class = "outer"  <?php if($todo_status == "FINISHED"){echo 'style=color:black;text-decoration:line-through;';}?>>
+                                <span class = "inner" <?php if($todo_status == "FINISHED"){echo 'style=color:red;';}?> ><?php echo $task ?></span>
                             </span>
+                            
+                            </div>
+                            <span><?php echo $date_added ?></span>
                         </div>
+                        
                         <div class = "right">
                         <?php if($todo_status != "FINISHED"){?>
                             <button id = "buttons" type = "button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#doneTask<?php echo $taskid ?>"><i class ="fa-solid fa-check" title = "Done"></i></button>
