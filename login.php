@@ -33,6 +33,7 @@
 
   <script src="javascript/pass-show-hide.js"></script>
   <script src="javascript/login.js"></script>
+
   <?php include_once "footer.php"; ?>
 
 </body>

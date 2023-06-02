@@ -147,7 +147,7 @@
                     
                 </div>
                 <?php }?>
-                <?php if($totaltask > 0){?>
+                <?php if($totaltask > 1){?>
                 <hr>
                 <?php
                 $sql = mysqli_query($conn, "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']} AND date_added = '$currentdate' AND Todo_status = 'NOT FINISHED'");

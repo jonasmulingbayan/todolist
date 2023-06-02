@@ -97,8 +97,6 @@
             <!-- Button trigger modal -->
             <div class = "todo-list">
             <?php 
-            $sqlFinished = mysqli_query($conn,"SELECT * FROM todos WHERE date_added != '$currentdate' AND user_ID = {$_SESSION['unique_id']} AND Todo_status = 'NOT FINISHED'");
-            $finished = mysqli_num_rows($sqlFinished); 
 
             $sqlCount = mysqli_query($conn,"SELECT * FROM todos WHERE date_added != '$currentdate' AND user_ID = {$_SESSION['unique_id']} AND Todo_status = 'NOT FINISHED'");
             $totaltask = mysqli_num_rows($sqlCount); 
@@ -138,21 +136,12 @@
                     
                 </div>
                 <?php }?>
-                <?php if($totaltask > 0){?>
+                <?php if($totaltask > 1){?>
                 <hr>
-                <?php
-                $sql = mysqli_query($conn, "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']} AND date_added != '$currentdate' AND Todo_status = 'NOT FINISHED'");
-                $unfinished = mysqli_num_rows($sql);
-                if(mysqli_num_rows($sql) > 0){?>
                 <div class = "for-checkbox">
-                <button type = "button" class="btn btn-success"<?php if($unfinished = 0){echo 'disabled';}?>  data-bs-toggle="modal" data-bs-target="#doneAllTask<?php echo $taskid ?>"><i class ="fa-solid fa-check" title = "Done All"></i> Done All</button>
+                <button type = "button" class="btn btn-success"<?php if($totaltask == 0){echo 'disabled';}?>  data-bs-toggle="modal" data-bs-target="#doneAllTask<?php echo $taskid ?>"><i class ="fa-solid fa-check" title = "Done All"></i> Done All</button>
                 </div>
-                 <?php }
-                 else{?>
-                <div class = "for-checkbox">
-                <button type = "button" class="btn btn-danger"<?php if($finished = 0){echo 'disabled';}?>  data-bs-toggle="modal" data-bs-target="#undoneAllTask<?php echo $taskid ?>"><i class ="fa-solid fa-xmark" title = "Undone All"></i> Undone All</button>
-                </div>
-                <?php }}?>
+                <?php }?>
                 <?php if($totaltask == 0){?>
                 <div class = "main-todo">
                 <div class = "no-task">

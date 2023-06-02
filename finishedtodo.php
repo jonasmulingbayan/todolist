@@ -69,9 +69,6 @@
             <!-- Button trigger modal -->
             <div class = "todo-list">
             <?php 
-            $sqlFinished = mysqli_query($conn,"SELECT * FROM todos WHERE date_added != '$currentdate' AND user_ID = {$_SESSION['unique_id']} AND Todo_status = 'FINISHED'");
-            $finished = mysqli_num_rows($sqlFinished); 
-
             $sqlCount = mysqli_query($conn,"SELECT * FROM todos WHERE date_added != '$currentdate' AND user_ID = {$_SESSION['unique_id']} AND Todo_status = 'FINISHED'");
             $totaltask = mysqli_num_rows($sqlCount); 
 
@@ -82,6 +79,7 @@
                 $taskid = $row['id'];
                 $uniq_id = $row['user_ID'];
                 $date_added = $row['date_added'];
+                
                 $todo_status = $row['Todo_status'];
                 ?>
                 <div id = "main-todo"  class = "main-todo">
@@ -105,10 +103,12 @@
                     
                 </div>
                 <?php }?>
+                <?php if($totaltask > 1){?>
                 <hr>
                 <div class = "for-checkbox">
                 <button type = "button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#undoneAllTask<?php echo $taskid ?>"><i class ="fa-solid fa-xmark" title = "Undone All"></i> Undone All</button>
                 </div>
+                <?php }?>
                 <?php if($totaltask == 0){?>
                 <div class = "main-todo">
                 <div class = "no-task">
