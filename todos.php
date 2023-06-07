@@ -11,12 +11,21 @@
     //$duedate = $_POST['duedate'];
     $status = "NOT FINISHED";
 
-    $sql = mysqli_query($conn, "INSERT INTO todos (Todo_name, user_ID, Todo_status, date_added) VALUES ('$task', '$id','$status', '$currentdate')");
-    if($sql){
-      header("location: todos.php?success=Task added successfully");
+    $sqlCompare = mysqli_query($conn,"SELECT * FROM todos WHERE date_added = '$currentdate' AND user_ID = {$_SESSION['unique_id']} AND Todo_name = '$task'");
+    $compare = mysqli_num_rows($sqlCompare); 
+
+    if($compare > 0){
+      echo'<script>alert("Task already exist");
+      window.document.referrer</script>';
     }
     else{
-        header("location: todos.php?error=Something went wrong");
+        $sql = mysqli_query($conn, "INSERT INTO todos (Todo_name, user_ID, Todo_status, date_added) VALUES ('$task', '$id','$status', '$currentdate')");
+        if($sql){
+        header("location: todos.php?success=Task added successfully");
+        }
+        else{
+            header("location: todos.php?error=Something went wrong");
+        }
     }
   }
 
@@ -25,7 +34,7 @@
     $user_ID = $_POST['user_ID'];
     $status = "FINISHED";
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE id = '$id' AND user_ID = '$user_ID'");
+    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status',date_completed = '$currentdates' WHERE id = '$id' AND user_ID = '$user_ID'");
     if($sql){
       header("location: todos.php?success=Task marked as done");
     }
@@ -40,7 +49,7 @@
     $user_ID = $_POST['user_ID'];
     $status = "NOT FINISHED";
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE id = '$id' AND user_ID = '$user_ID'");
+    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status', date_completed = '' WHERE id = '$id' AND user_ID = '$user_ID'");
     if($sql){
       header("location: todos.php?success=Task marked as not done");
     }
@@ -55,7 +64,7 @@
     $date = $_POST['currentdate'];
     $status = "FINISHED";
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE user_ID = '$userid' AND date_added = '$date'");
+    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status', date_completed = '$currentdates' WHERE user_ID = '$userid' AND date_added = '$date'");
     if($sql){
       header("location: todos.php?success=All Task marked as done");
     }
@@ -70,7 +79,7 @@
     $date = $_POST['currentdate'];
     $status = "NOT FINISHED";
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE user_ID = '$userid' AND date_added = '$date'");
+    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status', date_completed = '' WHERE user_ID = '$userid' AND date_added = '$date'");
     if($sql){
       header("location: todos.php?success=All Task marked as done");
     }
@@ -79,7 +88,21 @@
     }
     
   }
-  
+  if(isset($_POST['edittask'])){
+    $taskname = $_POST['task'];
+    $id = $_POST['taskid'];
+    $user_ID = $_POST['user_ID'];
+
+    $sqlEdit = mysqli_query($conn, "UPDATE todos SET Todo_name = '$taskname' WHERE id = '$id' AND user_ID = '$user_ID'");
+    if($sqlEdit){
+      header("location: todos.php?success=Task edited successfully");
+    }
+    else{
+        header("location: todos.php?error=Something went wrong");
+    }
+    
+  }
+
   if(isset($_POST['removedtask'])){
     $id = $_POST['taskid'];
     $user_ID = $_POST['user_ID'];
@@ -125,13 +148,21 @@
                 $taskid = $row['id'];
                 $uniq_id = $row['user_ID'];
                 $todo_status = $row['Todo_status'];
+                $date_completed = $row['date_completed'];
+                $dates =date('h:i A', strtotime($date_completed));
+
                 ?>
                 <div id = "main-todo"  class = "main-todo">
                     <?php if($totaltask > 0){?>
-                        <div class = "left" <?php if($todo_status == "FINISHED"){echo 'style=color:black;text-decoration:line-through;';}?>>
-                            <span class = "outer">
+                        <div class = "left" style = "line-height:15px;" >
+                        <div>
+                            <span class = "outer" <?php if($todo_status == "FINISHED"){echo 'style=color:black;text-decoration:line-through;';}?>>
                                 <span class = "inner" <?php if($todo_status == "FINISHED"){echo 'style=color:red;';}?>><?php echo $task ?></span>
                             </span>
+                        </div>
+                        <?php if($todo_status == "FINISHED"){?>
+                        <span>Completed: <?php echo $dates ?></span>
+                        <?php }?>
                         </div>
                         <div class = "right">
                         <?php if($todo_status != "FINISHED"){?>
@@ -140,6 +171,7 @@
                         else{?>
                             <button id = "buttons" type = "button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#undoneTask<?php echo $taskid ?>"><i class ="fa-solid fa-xmark" title = "Undone"></i></button>
                         <?php }?>
+                            <button id = "buttons" type = "button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editTask<?php echo $taskid ?>"><i class ="fa-solid fa-pen-to-square" title = "Edit"></i></button>
                             <button id = "buttons" type = "button" <?php if($todo_status == "FINISHED"){echo 'disabled';}?>  class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removedTask<?php echo $taskid ?>"><i class ="fa-solid fa-trash" title = "Delete"></i></button>
                         </div>
                     <?php }
@@ -147,21 +179,25 @@
                     
                 </div>
                 <?php }?>
-                <?php if($totaltask > 1){?>
-                <hr>
                 <?php
+                if($totaltask >1){
                 $sql = mysqli_query($conn, "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']} AND date_added = '$currentdate' AND Todo_status = 'NOT FINISHED'");
                 $unfinished = mysqli_num_rows($sql);
-                if(mysqli_num_rows($sql) > 0){?>
+                if($finished == 0){?>
+                <hr>
                 <div class = "for-checkbox">
                 <button type = "button" class="btn btn-success"<?php if($finished = 0){echo 'disabled';}?>  data-bs-toggle="modal" data-bs-target="#doneAllTask<?php echo $taskid ?>"><i class ="fa-solid fa-check" title = "Done All"></i> Done All</button>
                 </div>
-                 <?php }
-                 else{?>
+                 <?php }}?>
+                 <?php 
+                 if($totaltask > 1){
+                     if($unfinished == 0){?>
+                 <hr>
                 <div class = "for-checkbox">
                 <button type = "button" class="btn btn-danger"<?php if($unfinished = 0){echo 'disabled';}?>  data-bs-toggle="modal" data-bs-target="#undoneAllTask<?php echo $taskid ?>"><i class ="fa-solid fa-xmark" title = "Undone All"></i> Undone All</button>
                 </div>
                 <?php }}?>
+                
                 <?php if($totaltask == 0){?>
                 <div class = "main-todo">
                 <div class = "no-task">
@@ -335,6 +371,39 @@ while($row = mysqli_fetch_assoc($sqlquery)){
 </div>
 <?php }?>
 
+
+<!--Edit Task Modal -->
+<?php 
+$sqlEdit = "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']}";
+$sqlquery = mysqli_query($conn, $sqlEdit);
+while($row = mysqli_fetch_assoc($sqlquery)){
+    $task = $row['Todo_name'];
+    $id = $row['id'];
+    ?>
+<div class="modal fade" id="editTask<?php echo $id ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style = "z-index:9999999999;">
+        <div class="modal-dialog">
+            <div class="modal-content">  
+                <form action="todos.php" method="POST" enctype="multipart/form-data" autocomplete="off">
+                <div class="modal-body">
+
+                <div class="field input">
+                        <label for ="task">Task</label>
+                        <input type="text" name="task" class = "form-control" value = "<?php echo $task ?>">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" name = "edittask" class="btn btn-primary">Save Changes</button>
+                    <input type="hidden" name="taskid" value="<?php echo $id ?>">
+                    <input type="hidden" name="user_ID" value="<?php echo $_SESSION['unique_id'] ?>">
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<?php }?>
+
 <!--Removed Task Modal -->
 <?php 
 $sqlRemoved = "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']}";
@@ -367,7 +436,7 @@ while($row = mysqli_fetch_assoc($sqlquery)){
 </div>
 <?php }?>
    
-<?php include_once "footer.php"; ?>
+<!--<?php include_once "footer.php"; ?>-->
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

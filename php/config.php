@@ -12,5 +12,5 @@
   error_reporting(0);
   date_default_timezone_set('Asia/Manila');
   $currentdate = date('Y-m-d');
-  $currentdates = date('Y-m-d:H:i:s');
+  $currentdates = date('Y-m-d:H:i:s A');
 ?>

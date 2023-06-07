@@ -10,24 +10,9 @@
     $user_ID = $_POST['user_ID'];
     $status = "FINISHED";
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE id = '$id' AND user_ID = '$user_ID'");
+    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status', date_completed = '$currentdates' WHERE id = '$id' AND user_ID = '$user_ID'");
     if($sql){
       header("location: unfinishedtodo.php?success=Task marked as done");
-    }
-    else{
-        header("location: unfinishedtodo.php?error=Something went wrong");
-    }
-    
-  }
-
-  if(isset($_POST['undonetask'])){
-    $id = $_POST['taskid'];
-    $user_ID = $_POST['user_ID'];
-    $status = "NOT FINISHED";
-
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE id = '$id' AND user_ID = '$user_ID'");
-    if($sql){
-      header("location: unfinishedtodo.php?success=Task marked as not done");
     }
     else{
         header("location: unfinishedtodo.php?error=Something went wrong");
@@ -40,7 +25,7 @@
     $date = $_POST['currentdate'];
     $status = "FINISHED";
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE user_ID = '$userid' AND date_added != '$date'");
+    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status', date_completed = '$currentdates' WHERE user_ID = '$userid' AND date_added != '$date'");
     if($sql){
       header("location: unfinishedtodo.php?success=All Task marked as done");
     }
@@ -50,20 +35,21 @@
     
   }
 
-  if(isset($_POST['undoneall'])){
-    $userid = $_POST['userid'];
-    $date = $_POST['currentdate'];
-    $status = "NOT FINISHED";
+  if(isset($_POST['edittask'])){
+    $taskname = $_POST['task'];
+    $id = $_POST['taskid'];
+    $user_ID = $_POST['user_ID'];
 
-    $sql = mysqli_query($conn, "UPDATE todos SET Todo_status = '$status' WHERE user_ID = '$userid' AND date_added != '$date'");
-    if($sql){
-      header("location: unfinishedtodo.php?success=All Task marked as done");
+    $sqlEdit = mysqli_query($conn, "UPDATE todos SET Todo_name = '$taskname' WHERE id = '$id' AND user_ID = '$user_ID'");
+    if($sqlEdit){
+      header("location: unfinishedtodo.php?success=Task edited successfully");
     }
     else{
         header("location: unfinishedtodo.php?error=Something went wrong");
     }
     
   }
+ 
   
   if(isset($_POST['removedtask'])){
     $id = $_POST['taskid'];
@@ -119,16 +105,12 @@
                             </span>
                             
                             </div>
-                            <span><?php echo $date_added ?></span>
+                            <span>Date Added: <?php echo $date_added ?></span>
                         </div>
                         
                         <div class = "right">
-                        <?php if($todo_status != "FINISHED"){?>
                             <button id = "buttons" type = "button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#doneTask<?php echo $taskid ?>"><i class ="fa-solid fa-check" title = "Done"></i></button>
-                        <?php }
-                        else{?>
-                            <button id = "buttons" type = "button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#undoneTask<?php echo $taskid ?>"><i class ="fa-solid fa-xmark" title = "Undone"></i></button>
-                        <?php }?>
+                            <button id = "buttons" type = "button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editTask<?php echo $taskid ?>"><i class ="fa-solid fa-pen-to-square" title = "Edit"></i></button>
                             <button id = "buttons" type = "button" <?php if($todo_status == "FINISHED"){echo 'disabled';}?>  class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removedTask<?php echo $taskid ?>"><i class ="fa-solid fa-trash" title = "Delete"></i></button>
                         </div>
                     <?php }
@@ -284,6 +266,38 @@ while($row = mysqli_fetch_assoc($sqlquery)){
 </div>
 <?php }?>
 
+<!--Edit Task Modal -->
+<?php 
+$sqlEdit = "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']} AND date_added != '$currentdate' AND Todo_status = 'NOT FINISHED'";
+$sqlquery = mysqli_query($conn, $sqlEdit);
+while($row = mysqli_fetch_assoc($sqlquery)){
+    $task = $row['Todo_name'];
+    $id = $row['id'];
+    ?>
+<div class="modal fade" id="editTask<?php echo $id ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style = "z-index:9999999999;">
+        <div class="modal-dialog">
+            <div class="modal-content">  
+                <form action="unfinishedtodo.php" method="POST" enctype="multipart/form-data" autocomplete="off">
+                <div class="modal-body">
+
+                <div class="field input">
+                        <label for ="task">Task</label>
+                        <input type="text" name="task" class = "form-control" value = "<?php echo $task ?>">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" name = "edittask" class="btn btn-primary">Save Changes</button>
+                    <input type="hidden" name="taskid" value="<?php echo $id ?>">
+                    <input type="hidden" name="user_ID" value="<?php echo $_SESSION['unique_id'] ?>">
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<?php }?>
+
 <!--Removed Task Modal -->
 <?php 
 $sqlRemoved = "SELECT * FROM todos WHERE user_ID = {$_SESSION['unique_id']} AND date_added != '$currentdate' AND Todo_status = 'NOT FINISHED'";
@@ -316,7 +330,7 @@ while($row = mysqli_fetch_assoc($sqlquery)){
 </div>
 <?php }?>
    
-<?php include_once "footer.php"; ?>
+<!--<?php include_once "footer.php"; ?>-->
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
